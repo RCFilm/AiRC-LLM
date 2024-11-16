@@ -1,0 +1,773 @@
+# Ignore build output
+build/
+debug/
+release/
+
+# Ignore Qt build directories
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+
+# Ignore object files and executables
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Ignore Qt Creator project files
+*.creator
+*.creator.user
+*.creator.user.*
+
+# Ignore Qt Linguist files
+*.ts
+*.qm
+
+# Ignore Qt resource files
+*.qrc
+
+# Ignore Qt moc files
+moc_*.cpp
+
+# Ignore Qt uic files
+ui_*.h
+
+# Ignore Qt rcc files
+qrc_*.cpp
+
+# Ignore Qt qmlcache files
+*.qmlc
+
+# Ignore Qt qmlimportscanner files
+*.qmlimportscanner
+
+# Ignore Qt qmltypes files
+*.qmltypes
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qmlcachegen files
+*.qmlcachegen
+
+# Ignore Qt qml
