@@ -35,7 +35,14 @@ HEADERS += \
     headers/Ollama.h \  # Add the Ollama.hpp header
     headers/ollama_agent.h \
     headers/ollama_api.h \
-    headers/workspace.h
+    headers/workspace.h \
+    hnswlib/bruteforce.h \
+    hnswlib/hnswalg.h \
+    hnswlib/hnswlib.h \
+    hnswlib/space_ip.h \
+    hnswlib/space_l2.h \
+    hnswlib/stop_condition.h \
+    hnswlib/visited_list_pool.h
 
 FORMS += \
     ui/mainwindow.ui

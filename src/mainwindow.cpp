@@ -174,6 +174,10 @@ void MainWindow::sendMessage() {
                 // Normalize the response text
                 QString normalizedResponse = QString::fromStdString(response).trimmed();
                 qDebug() << "Normalized response:" << normalizedResponse;
+
+                // Replace newline characters with spaces to ensure the response appears as a continuous paragraph
+                normalizedResponse.replace('\n', ' ');
+
                 if (!normalizedResponse.isEmpty()) {
                     chatTextBrowser->append(normalizedResponse);
 
