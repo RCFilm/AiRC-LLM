@@ -1,3 +1,4 @@
+# MyOnxApp.pro
 QT += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -15,12 +16,26 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    src/deepseek_api.cpp \
+    src/huggingface_agent.cpp \
+    src/huggingface_api.cpp \
     src/main.cpp \
-    src/mainwindow.cpp
+    src/mainwindow.cpp \
+    src/ollama_agent.cpp \
+    src/ollama_api.cpp \
+    src/workspace.cpp
 
 HEADERS += \
+    headers/deepseek_api.h \
+    headers/huggingface_agent.h \
+    headers/huggingface_api.h \
+    headers/llm_agent_interface.h \
+    headers/llm_api_interface.h \
     headers/mainwindow.h \
-    headers/Ollama.h  # Add the Ollama.hpp header
+    headers/Ollama.h \  # Add the Ollama.hpp header
+    headers/ollama_agent.h \
+    headers/ollama_api.h \
+    headers/workspace.h
 
 FORMS += \
     ui/mainwindow.ui
@@ -36,3 +51,6 @@ INCLUDEPATH += /usr/local/include
 
 # Link against the cmark library
 LIBS += -L/usr/local/lib -lcmark
+
+# Set the application name
+TARGET = AiRC-LLM

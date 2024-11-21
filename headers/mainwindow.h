@@ -1,3 +1,4 @@
+// mainwindow.h
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -8,7 +9,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QFile>
-#include <QTextEdit>
+#include <QTextBrowser>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QListWidget>
@@ -18,14 +19,22 @@
 #include <QDialog>
 #include <QFormLayout>
 #include <QComboBox>
-#include "headers/Ollama.h" // Include the ollama-hpp header
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QMenu>
+#include <QTimer>
+#include <atomic>
+#include <QEventLoop>
+#include <unordered_map>
+#include "workspace.h"
+#include "huggingface_agent.h"
+#include "ollama_agent.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
@@ -38,13 +47,9 @@ private slots:
     void sendMessage();
     void clearChat();
     void openSettings(QListWidgetItem *item);
-    void loadModelList();
-
-    // New slots for network replies
-    void onModelLoaded(QNetworkReply* reply);
-    void onModelListFetched(QNetworkReply* reply);
-    void onInferenceFinished(QNetworkReply* reply);
-    void onInferenceDataReady(QNetworkReply* reply);
+    void renameWorkspace();
+    void deleteWorkspace();
+    void showContextMenu(const QPoint& pos);
 
 private:
     Ui::MainWindow *ui;
@@ -54,12 +59,22 @@ private:
     QVBoxLayout *rightLayout;
     QPushButton *addWorkspaceButton;
     QListWidget *workspacesList;
-    QTextEdit *chatTextEdit;
+    QTextBrowser *chatTextBrowser;
     QLineEdit *inputLineEdit;
     QPushButton *sendButton;
     QPushButton *clearButton;
-    std::map<QString, QString> workspaceModels;
+    std::map<int, Workspace*> workspaceMap;
     QNetworkAccessManager *networkManager;
+    std::unordered_map<std::string, bool> modelStatusMap;
+    std::atomic<bool> done{false};
+    QEventLoop eventLoop;
+
+    void loadWorkspaces();
+    void saveWorkspaces();
+    bool verifyModelStartup(const QString& modelName);
+    bool loadModel(const QString& modelName);
+    int getNextWorkspaceId() const;
+    LlmAgentInterface* createAgent(const QString& apiType);
 };
 
 #endif // MAINWINDOW_H

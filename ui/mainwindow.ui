@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>AnythingLLM</string>
+   <string>AiRC-LLM</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -82,8 +82,42 @@
     </item>
    </layout>
   </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuWorkspace">
+    <property name="title">
+     <string>Workspace</string>
+    </property>
+    <addaction name="actionAdd_Workspace"/>
+    <addaction name="actionRename_Workspace"/>
+    <addaction name="actionDelete_Workspace"/>
+   </widget>
+   <addaction name="menuWorkspace"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionAdd_Workspace">
+   <property name="text">
+    <string>Add Workspace</string>
+   </property>
+  </action>
+  <action name="actionRename_Workspace">
+   <property name="text">
+    <string>Rename Workspace</string>
+   </property>
+  </action>
+  <action name="actionDelete_Workspace">
+   <property name="text">
+    <string>Delete Workspace</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
 </ui>
-
