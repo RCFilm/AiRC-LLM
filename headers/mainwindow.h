@@ -23,8 +23,6 @@
 #include <QInputDialog>
 #include <QMenu>
 #include <QTimer>
-#include <atomic>
-#include <QEventLoop>
 #include <unordered_map>
 #include "workspace.h"
 #include "huggingface_agent.h"
@@ -46,7 +44,7 @@ private slots:
     void selectWorkspace(QListWidgetItem *item);
     void sendMessage();
     void clearChat();
-    void openSettings(QListWidgetItem *item);
+    void openSettings(QListWidgetItem *item = nullptr);
     void renameWorkspace();
     void deleteWorkspace();
     void showContextMenu(const QPoint& pos);
@@ -63,11 +61,10 @@ private:
     QLineEdit *inputLineEdit;
     QPushButton *sendButton;
     QPushButton *clearButton;
+    QPushButton *settingsButton; // Declare settingsButton
     std::map<int, Workspace*> workspaceMap;
     QNetworkAccessManager *networkManager;
     std::unordered_map<std::string, bool> modelStatusMap;
-    std::atomic<bool> done{false};
-    QEventLoop eventLoop;
 
     void loadWorkspaces();
     void saveWorkspaces();
@@ -75,6 +72,10 @@ private:
     bool loadModel(const QString& modelName);
     int getNextWorkspaceId() const;
     LlmAgentInterface* createAgent(const QString& apiType);
+
+    // Declare markdown handling functions
+    QString markdownToHtml(const QString& markdownText);
+    void updateChatWithMarkdown(const QString& markdownText);
 };
 
 #endif // MAINWINDOW_H

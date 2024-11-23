@@ -23,7 +23,7 @@ bool OllamaAgent::load_model(const std::string& modelName) {
 
 void OllamaAgent::generate(const std::string& modelName, const std::string& prompt, std::function<void(const std::string&)> callback) {
     ollamaInstance.generate(modelName, prompt, [this, callback](const std::string& response) {
-        std::string trimmedResponse = this->trim(response); // Trim the response
+        std::string trimmedResponse = trim(response); // Trim the response
         qDebug() << "Received response from model:" << QString::fromStdString(trimmedResponse);
         callback(trimmedResponse);
     });

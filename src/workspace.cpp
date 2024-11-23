@@ -110,6 +110,7 @@ void Workspace::loadIndex(const std::string& filename) {
 }
 
 std::vector<float> Workspace::getEmbedding(const std::string& text) {
+    (void)text; // Suppress unused parameter warning
     // Implement the logic to generate an embedding for the given text
     // This is a placeholder implementation
     std::vector<float> embedding(embeddingDim, 0.0f);

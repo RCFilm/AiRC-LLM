@@ -1,5 +1,5 @@
-# MyOnxApp.pro
-QT += core gui network
+# AiRC-LLC.pro
+QT += core gui network widgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -23,7 +23,8 @@ SOURCES += \
     src/mainwindow.cpp \
     src/ollama_agent.cpp \
     src/ollama_api.cpp \
-    src/workspace.cpp
+    src/workspace.cpp \
+    src/workspace_manager.cpp
 
 HEADERS += \
     headers/deepseek_api.h \
@@ -32,23 +33,25 @@ HEADERS += \
     headers/llm_agent_interface.h \
     headers/llm_api_interface.h \
     headers/mainwindow.h \
-    headers/Ollama.h \  # Add the Ollama.hpp header
+    include/Ollama.h \  # Update the path to Ollama.h
     headers/ollama_agent.h \
     headers/ollama_api.h \
     headers/workspace.h \
-    hnswlib/bruteforce.h \
-    hnswlib/hnswalg.h \
-    hnswlib/hnswlib.h \
-    hnswlib/space_ip.h \
-    hnswlib/space_l2.h \
-    hnswlib/stop_condition.h \
-    hnswlib/visited_list_pool.h
+    headers/workspace_manager.h \
+    include/hnswlib/bruteforce.h \
+    include/hnswlib/hnswalg.h \
+    include/hnswlib/hnswlib.h \
+    include/hnswlib/space_ip.h \
+    include/hnswlib/space_l2.h \
+    include/hnswlib/stop_condition.h \
+    include/hnswlib/visited_list_pool.h
 
 FORMS += \
     ui/mainwindow.ui
 
 # Add the include path for headers
 INCLUDEPATH += $$PWD/headers
+INCLUDEPATH += $$PWD/include
 
 # Set the deployment target to macOS 12.0
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 12.0
@@ -60,4 +63,4 @@ INCLUDEPATH += /usr/local/include
 LIBS += -L/usr/local/lib -lcmark
 
 # Set the application name
-TARGET = AiRC-LLM
+TARGET = AiRC-LLC

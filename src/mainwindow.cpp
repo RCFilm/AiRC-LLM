@@ -1,24 +1,16 @@
+// mainwindow.cpp
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QException>
 #include <QDebug>
-#include <QFile>
 #include <QDir>
 #include <QStandardPaths>
-#include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QNetworkAccessManager>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QTimer>
-#include <QThread>
-#include <atomic>
-#include <iostream>
-#include <thread>
-#include <chrono>
 #include <functional>
 #include <vector>
+#include <future>
+#include <cmark.h>
+#include <QRegularExpression> // Add this include
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -30,33 +22,65 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Set up the central widget and layout
     centralWidget = new QWidget(this);
-    mainLayout = new QHBoxLayout(centralWidget);
-    leftLayout = new QVBoxLayout();
-    rightLayout = new QVBoxLayout();
+    mainLayout = new QHBoxLayout(centralWidget); // Ensure this is QHBoxLayout
+
+    // Create a QSplitter to manage the layout
+    QSplitter *splitter = new QSplitter(Qt::Horizontal, centralWidget);
+    mainLayout->addWidget(splitter);
+
+    // Declare and initialize leftWidget and rightWidget
+    QWidget *leftWidget = new QWidget(splitter);
+    QWidget *rightWidget = new QWidget(splitter);
+
+    // Set up the left widget (workspace sidebar)
+    leftLayout = new QVBoxLayout(leftWidget);
 
     // Set up the add workspace button
-    addWorkspaceButton = new QPushButton("+", centralWidget);
+    addWorkspaceButton = new QPushButton("+", leftWidget);
+    addWorkspaceButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     leftLayout->addWidget(addWorkspaceButton);
 
     // Set up the workspaces list
-    workspacesList = new QListWidget(centralWidget);
+    workspacesList = new QListWidget(leftWidget);
+    workspacesList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     leftLayout->addWidget(workspacesList);
 
+    // Set up the right widget (main chat window)
+    rightLayout = new QVBoxLayout(rightWidget);
+
     // Set up the chat text browser
-    chatTextBrowser = new QTextBrowser(centralWidget);
+    chatTextBrowser = new QTextBrowser(rightWidget);
+    chatTextBrowser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     rightLayout->addWidget(chatTextBrowser);
 
     // Set up the input line edit and send button
-    inputLineEdit = new QLineEdit(centralWidget);
-    sendButton = new QPushButton("Send", centralWidget);
-    clearButton = new QPushButton("Clear", centralWidget);
-    rightLayout->addWidget(inputLineEdit);
-    rightLayout->addWidget(sendButton);
-    rightLayout->addWidget(clearButton);
+    inputLineEdit = new QLineEdit(rightWidget);
+    inputLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    sendButton = new QPushButton("Send", rightWidget);
+    sendButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    clearButton = new QPushButton("Clear", rightWidget);
+    clearButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    // Add layouts to the main layout
-    mainLayout->addLayout(leftLayout);
-    mainLayout->addLayout(rightLayout);
+    // Declare and initialize settingsButton
+    settingsButton = new QPushButton("Settings", rightWidget);
+    settingsButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    QHBoxLayout *inputLayout = new QHBoxLayout();
+    inputLayout->addWidget(inputLineEdit);
+    inputLayout->addWidget(sendButton);
+    inputLayout->addWidget(clearButton);
+    inputLayout->addWidget(settingsButton);
+
+    rightLayout->addLayout(inputLayout);
+
+    // Add widgets to the splitter
+    splitter->addWidget(leftWidget);
+    splitter->addWidget(rightWidget);
+
+    // Set initial sizes for the splitter
+    QList<int> sizes;
+    sizes << 100 << 900; // Adjust these values as needed to achieve the desired ratio
+    splitter->setSizes(sizes);
 
     // Set the central widget
     setCentralWidget(centralWidget);
@@ -72,6 +96,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Connect the clear button to the clearChat slot
     connect(clearButton, &QPushButton::clicked, this, &MainWindow::clearChat);
+
+    // Connect the settings button to the openSettings slot
+    connect(settingsButton, &QPushButton::clicked, this, [this]() { openSettings(); });
 
     // Connect the input line edit to the sendMessage slot when Enter is pressed
     connect(inputLineEdit, &QLineEdit::returnPressed, this, &MainWindow::sendMessage);
@@ -147,63 +174,53 @@ void MainWindow::selectWorkspace(QListWidgetItem *item) {
 void MainWindow::sendMessage() {
     QString message = inputLineEdit->text();
     if (!message.isEmpty()) {
-        // Clear the input line edit
         inputLineEdit->clear();
 
-        // Get the selected workspace
         QListWidgetItem *currentItem = workspacesList->currentItem();
         if (!currentItem) return;
         int workspaceId = currentItem->data(Qt::UserRole).toInt();
 
-        // Get the model associated with the workspace
         QString modelName = workspaceMap[workspaceId]->getModel();
         if (modelName.isEmpty()) {
             chatTextBrowser->append("No model selected for this workspace.");
             return;
         }
 
-        try {
-            // Verify model startup
-            if (!verifyModelStartup(modelName)) {
-                chatTextBrowser->append("Model is not ready.");
-                return;
-            }
-
-            // Create a request to the LLM API
-            workspaceMap[workspaceId]->getAgent()->generate(modelName.toStdString(), message.toStdString(), [this, workspaceId](const std::string& response) {
-                // Normalize the response text
-                QString normalizedResponse = QString::fromStdString(response).trimmed();
-                qDebug() << "Normalized response:" << normalizedResponse;
-
-                // Replace newline characters with spaces to ensure the response appears as a continuous paragraph
-                normalizedResponse.replace('\n', ' ');
-
-                if (!normalizedResponse.isEmpty()) {
-                    chatTextBrowser->append(normalizedResponse);
-
-                    // Add embedding to Hnswlib index
-                    std::vector<float> embedding = workspaceMap[workspaceId]->getEmbedding(normalizedResponse.toStdString());
-                    workspaceMap[workspaceId]->addEmbedding(embedding, normalizedResponse);
-
-                    // Save the chat message to the workspace
-                    workspaceMap[workspaceId]->addChatMessage("You: " + normalizedResponse);
-
-                    // Save workspaces to file after sending a message
-                    saveWorkspaces();
-                } else {
-                    chatTextBrowser->append("Error: Empty response received.");
-                }
-            });
-
-            // Save workspaces to file after sending a message
-            saveWorkspaces();
-        } catch (const std::exception& e) {
-            qCritical() << "Error sending message:" << e.what();
-            chatTextBrowser->append("Error: " + QString::fromStdString(e.what()));
-        } catch (...) {
-            qCritical() << "Unknown exception caught";
-            chatTextBrowser->append("Error: Unknown exception");
+        if (!verifyModelStartup(modelName)) {
+            chatTextBrowser->append("Model is not ready.");
+            return;
         }
+
+        // Display loading indicator
+        chatTextBrowser->append("Generating response...");
+
+        // Use std::async for asynchronous generation
+        auto future = std::async(std::launch::async, [this, workspaceId, modelName, message]() {
+            try {
+                QString accumulatedResponse;
+                bool responseComplete = false;
+                workspaceMap[workspaceId]->getAgent()->generate(modelName.toStdString(), message.toStdString(), [this, workspaceId, &accumulatedResponse, &responseComplete](const std::string& response) {
+                    accumulatedResponse += QString::fromStdString(response);
+                    if (response.find("<<END>>") != std::string::npos) {
+                        responseComplete = true;
+                        accumulatedResponse.replace("<<END>>", "");
+                    }
+                    QMetaObject::invokeMethod(this, [this, accumulatedResponse, responseComplete]() {
+                        if (responseComplete) {
+                            updateChatWithMarkdown(accumulatedResponse);
+                        }
+                    });
+                });
+            } catch (const std::runtime_error& e) {
+                QMetaObject::invokeMethod(this, [this, e]() {
+                    chatTextBrowser->append("Runtime Error: " + QString::fromStdString(e.what()));
+                });
+            } catch (const std::exception& e) {
+                QMetaObject::invokeMethod(this, [this, e]() {
+                    chatTextBrowser->append("Error: " + QString::fromStdString(e.what()));
+                });
+            }
+        });
     }
 }
 
@@ -250,6 +267,7 @@ void MainWindow::openSettings(QListWidgetItem *item) {
 
     // Connect the apiComboBox to update the modelComboBox dynamically
     connect(apiComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
+        (void)index; // Suppress unused parameter warning
         modelComboBox->clear();
         QString selectedApi = apiComboBox->currentText();
         LlmAgentInterface* agent = createAgent(selectedApi);
@@ -528,4 +546,47 @@ LlmAgentInterface* MainWindow::createAgent(const QString& apiType) {
         return new HuggingFaceAgent();
     }
     return nullptr;
+}
+
+QString MainWindow::markdownToHtml(const QString& markdownText) {
+    // Trim leading and trailing whitespace
+    QString trimmedText = markdownText.trimmed();
+
+    // Correct markdown syntax
+    QString correctedText = trimmedText
+                                .replace("*#", "#")
+                                .replace("*##", "##")
+                                .replace("*###", "###")
+                                .replace("*####", "####")
+                                .replace("*#####", "#####")
+                                .replace("*######", "######")
+                                .replace("*-", "-")
+                                .replace("*[", "[")
+                                .replace("*1.", "1.")
+                                .replace("*2.", "2.")
+                                .replace("*3.", "3.")
+                                .replace("*````code```", "```\ncode\n```")
+                                .replace("*~~", "~~");
+
+    // Convert markdown to HTML
+    char* html = cmark_markdown_to_html(correctedText.toStdString().c_str(), correctedText.size(), CMARK_OPT_DEFAULT);
+    QString htmlText = QString::fromUtf8(html);
+    free(html);
+    return htmlText;
+}
+
+void MainWindow::updateChatWithMarkdown(const QString& markdownText) {
+    static QString accumulatedText;
+    accumulatedText += markdownText;
+
+    // Check if we have accumulated enough text to process
+    QRegularExpression re("[.!?]\\s*");
+    if (accumulatedText.contains(re)) {
+        QStringList sentences = accumulatedText.split(re, Qt::SkipEmptyParts);
+        for (const QString& sentence : sentences) {
+            QString htmlText = markdownToHtml(sentence);
+            chatTextBrowser->append(htmlText);
+        }
+        accumulatedText.clear();
+    }
 }
