@@ -771,3 +771,4 @@ qrc_*.cpp
 *.qmlcachegen
 
 # Ignore Qt qml
+*.zip
