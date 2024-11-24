@@ -1,6 +1,7 @@
 // mainwindow.cpp
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "mainwindow_helpers.h"
 #include <QException>
 #include <QDebug>
 #include <QDir>
@@ -9,8 +10,7 @@
 #include <functional>
 #include <vector>
 #include <future>
-#include <cmark.h>
-#include <QRegularExpression> // Add this include
+#include <QRegularExpression>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -124,18 +124,39 @@ MainWindow::~MainWindow() {
     saveWorkspaces();
 
     delete ui;
-    for (auto& pair : workspaceMap) {
-        delete pair.second;
+    for (auto it = workspaceMap.begin(); it != workspaceMap.end(); ++it) {
+        delete it->second;
     }
 }
 
+void MainWindow::loadWorkspaces() {
+    QMap<int, Workspace*> qmapWorkspaceMap;
+    for (auto it = workspaceMap.begin(); it != workspaceMap.end(); ++it) {
+        qmapWorkspaceMap[it->first] = it->second;
+    }
+    MainWindowHelpers::loadWorkspaces(qmapWorkspaceMap, workspacesList);
+    workspaceMap = qmapWorkspaceMap.toStdMap();
+}
+
+void MainWindow::saveWorkspaces() {
+    QMap<int, Workspace*> qmapWorkspaceMap;
+    for (auto it = workspaceMap.begin(); it != workspaceMap.end(); ++it) {
+        qmapWorkspaceMap[it->first] = it->second;
+    }
+    MainWindowHelpers::saveWorkspaces(qmapWorkspaceMap);
+}
+
 void MainWindow::addWorkspace() {
-    int workspaceId = getNextWorkspaceId();
+    QMap<int, Workspace*> qmapWorkspaceMap;
+    for (auto it = workspaceMap.begin(); it != workspaceMap.end(); ++it) {
+        qmapWorkspaceMap[it->first] = it->second;
+    }
+    int workspaceId = MainWindowHelpers::getNextWorkspaceId(qmapWorkspaceMap);
     QString workspaceName = "Workspace " + QString::number(workspaceId);
 
     // Ensure the workspace name is unique
     while (workspaceMap.find(workspaceId) != workspaceMap.end()) {
-        workspaceId = getNextWorkspaceId();
+        workspaceId = MainWindowHelpers::getNextWorkspaceId(qmapWorkspaceMap);
         workspaceName = "Workspace " + QString::number(workspaceId);
     }
 
@@ -186,7 +207,7 @@ void MainWindow::sendMessage() {
             return;
         }
 
-        if (!verifyModelStartup(modelName)) {
+        if (!MainWindowHelpers::verifyModelStartup(modelName, modelStatusMap)) {
             chatTextBrowser->append("Model is not ready.");
             return;
         }
@@ -197,18 +218,10 @@ void MainWindow::sendMessage() {
         // Use std::async for asynchronous generation
         auto future = std::async(std::launch::async, [this, workspaceId, modelName, message]() {
             try {
-                QString accumulatedResponse;
-                bool responseComplete = false;
-                workspaceMap[workspaceId]->getAgent()->generate(modelName.toStdString(), message.toStdString(), [this, workspaceId, &accumulatedResponse, &responseComplete](const std::string& response) {
-                    accumulatedResponse += QString::fromStdString(response);
-                    if (response.find("<<END>>") != std::string::npos) {
-                        responseComplete = true;
-                        accumulatedResponse.replace("<<END>>", "");
-                    }
-                    QMetaObject::invokeMethod(this, [this, accumulatedResponse, responseComplete]() {
-                        if (responseComplete) {
-                            updateChatWithMarkdown(accumulatedResponse);
-                        }
+                workspaceMap[workspaceId]->getAgent()->generate(modelName.toStdString(), message.toStdString(), [this, workspaceId](const std::string& response) {
+                    QString responseText = QString::fromStdString(response);
+                    QMetaObject::invokeMethod(this, [this, responseText]() {
+                        MainWindowHelpers::updateChatWithMarkdown(chatTextBrowser, responseText);
                     });
                 });
             } catch (const std::runtime_error& e) {
@@ -270,7 +283,7 @@ void MainWindow::openSettings(QListWidgetItem *item) {
         (void)index; // Suppress unused parameter warning
         modelComboBox->clear();
         QString selectedApi = apiComboBox->currentText();
-        LlmAgentInterface* agent = createAgent(selectedApi);
+        LlmAgentInterface* agent = MainWindowHelpers::createAgent(selectedApi);
         if (agent) {
             std::vector<std::string> models = agent->list_models();
             for (const auto& model : models) {
@@ -365,228 +378,4 @@ void MainWindow::showContextMenu(const QPoint& pos) {
     contextMenu.addAction(&settingsAction);
 
     contextMenu.exec(workspacesList->mapToGlobal(pos));
-}
-
-void MainWindow::loadWorkspaces() {
-    try {
-        QString filePath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/workspaces.json";
-        QFile file(filePath);
-
-        if (!file.exists()) {
-            QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
-            if (!dir.mkpath(".")) {
-                qCritical() << "Failed to create directory for workspaces file.";
-                return;
-            }
-
-            // Create an empty file if it doesn't exist
-            if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                qCritical() << "Failed to create workspaces file:" << file.errorString();
-                return;
-            }
-            file.close();
-        }
-
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qCritical() << "Failed to open workspaces file for reading:" << file.errorString();
-            return;
-        }
-
-        QByteArray data = file.readAll();
-        file.close();
-
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
-        if (jsonDoc.isNull() || !jsonDoc.isArray()) {
-            qCritical() << "Invalid JSON format in workspaces file.";
-            return;
-        }
-
-        QJsonArray jsonArray = jsonDoc.array();
-
-        for (const auto& jsonValue : jsonArray) {
-            if (jsonValue.isObject()) {
-                QJsonObject jsonObject = jsonValue.toObject();
-                QString agentType = jsonObject["agentType"].toString();
-                QString apiType = jsonObject["apiType"].toString();
-                LlmAgentInterface* agent = createAgent(apiType);
-                if (agent) {
-                    Workspace* workspace = new Workspace(Workspace::fromJson(jsonObject, agent));
-                    workspaceMap[workspace->getId()] = workspace;
-                    QListWidgetItem *item = new QListWidgetItem(workspace->getName(), workspacesList);
-                    item->setData(Qt::UserRole, workspace->getId()); // Store the workspace ID in the item's data
-                    workspacesList->addItem(item);
-                }
-            }
-        }
-    } catch (const QException& e) {
-        qCritical() << "Exception caught in loadWorkspaces:" << e.what();
-    } catch (...) {
-        qCritical() << "Unknown exception caught in loadWorkspaces";
-    }
-}
-
-void MainWindow::saveWorkspaces() {
-    try {
-        QString filePath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/workspaces.json";
-        QFile file(filePath);
-
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            qCritical() << "Failed to open workspaces file for writing:" << file.errorString();
-            return;
-        }
-
-        QJsonArray jsonArray;
-        for (const auto& pair : workspaceMap) {
-            QJsonObject jsonObject = pair.second->toJson();
-            jsonObject["agentType"] = QString::fromStdString(pair.second->getAgent()->getAgentType()); // Use getAgentType()
-            jsonObject["apiType"] = pair.second->getApiType();
-            jsonArray.append(jsonObject);
-        }
-
-        QJsonDocument jsonDoc(jsonArray);
-        file.write(jsonDoc.toJson());
-        file.close();
-    } catch (const QException& e) {
-        qCritical() << "Exception caught in saveWorkspaces:" << e.what();
-    } catch (...) {
-        qCritical() << "Unknown exception caught in saveWorkspaces";
-    }
-}
-
-bool MainWindow::verifyModelStartup(const QString& modelName) {
-    std::string modelKey = modelName.toStdString();
-
-    // Check if the model status is already known
-    if (modelStatusMap.find(modelKey) != modelStatusMap.end()) {
-        return modelStatusMap[modelKey];
-    }
-
-    try {
-        // List the models available locally in the ollama server
-        std::vector<std::string> runningModels = ollama::list_running_models();
-
-        // Check if the specified model is in the list of running models
-        for (const auto& model : runningModels) {
-            if (model == modelKey) {
-                modelStatusMap[modelKey] = true;
-                return true;
-            }
-        }
-
-        // If the model is not found in the list of running models, ask the user to load the model
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(this, "Model Not Running", "The model " + modelName + " is not running. Do you want to load it?", QMessageBox::Yes | QMessageBox::No);
-        if (reply == QMessageBox::Yes) {
-            if (loadModel(modelName)) {
-                modelStatusMap[modelKey] = true;
-                return true;
-            }
-        }
-
-        modelStatusMap[modelKey] = false;
-        return false;
-    } catch (const ollama::exception& e) {
-        qCritical() << "Error verifying model startup:" << e.what();
-        QMessageBox::critical(this, "Model Startup Verification Error", "Error verifying model startup: " + modelName + "\nDetails: " + QString::fromStdString(e.what()));
-        modelStatusMap[modelKey] = false;
-        return false;
-    } catch (const std::exception& e) {
-        qCritical() << "Standard exception caught in verifyModelStartup:" << e.what();
-        QMessageBox::critical(this, "Model Startup Verification Error", "Standard exception caught while verifying model startup: " + modelName + "\nDetails: " + QString::fromStdString(e.what()));
-        modelStatusMap[modelKey] = false;
-        return false;
-    } catch (...) {
-        qCritical() << "Unknown exception caught in verifyModelStartup";
-        QMessageBox::critical(this, "Model Startup Verification Error", "Unknown exception caught while verifying model startup: " + modelName);
-        modelStatusMap[modelKey] = false;
-        return false;
-    }
-}
-
-bool MainWindow::loadModel(const QString& modelName) {
-    try {
-        qDebug() << "Loading model:" << modelName;
-        bool modelLoaded = ollama::load_model(modelName.toStdString());
-        if (modelLoaded) {
-            qDebug() << "Model loaded successfully:" << modelName;
-        } else {
-            qDebug() << "Failed to load model:" << modelName;
-            QMessageBox::critical(this, "Model Loading Error", "Failed to load model: " + modelName + "\nPlease check the server and try again.");
-        }
-        return modelLoaded;
-    } catch (const ollama::exception& e) {
-        qCritical() << "Error loading model:" << e.what();
-        QMessageBox::critical(this, "Model Loading Error", "Error loading model: " + modelName + "\nDetails: " + QString::fromStdString(e.what()));
-        return false;
-    } catch (const std::exception& e) {
-        qCritical() << "Standard exception caught in loadModel:" << e.what();
-        QMessageBox::critical(this, "Model Loading Error", "Standard exception caught while loading model: " + modelName + "\nDetails: " + QString::fromStdString(e.what()));
-        return false;
-    } catch (...) {
-        qCritical() << "Unknown exception caught in loadModel";
-        QMessageBox::critical(this, "Model Loading Error", "Unknown exception caught while loading model: " + modelName);
-        return false;
-    }
-}
-
-int MainWindow::getNextWorkspaceId() const {
-    int maxId = 0;
-    for (const auto& pair : workspaceMap) {
-        if (pair.first > maxId) {
-            maxId = pair.first;
-        }
-    }
-    return maxId + 1;
-}
-
-LlmAgentInterface* MainWindow::createAgent(const QString& apiType) {
-    if (apiType == "Ollama") {
-        return new OllamaAgent();
-    } else if (apiType == "HuggingFace") {
-        return new HuggingFaceAgent();
-    }
-    return nullptr;
-}
-
-QString MainWindow::markdownToHtml(const QString& markdownText) {
-    // Trim leading and trailing whitespace
-    QString trimmedText = markdownText.trimmed();
-
-    // Correct markdown syntax
-    QString correctedText = trimmedText
-                                .replace("*#", "#")
-                                .replace("*##", "##")
-                                .replace("*###", "###")
-                                .replace("*####", "####")
-                                .replace("*#####", "#####")
-                                .replace("*######", "######")
-                                .replace("*-", "-")
-                                .replace("*[", "[")
-                                .replace("*1.", "1.")
-                                .replace("*2.", "2.")
-                                .replace("*3.", "3.")
-                                .replace("*````code```", "```\ncode\n```")
-                                .replace("*~~", "~~");
-
-    // Convert markdown to HTML
-    char* html = cmark_markdown_to_html(correctedText.toStdString().c_str(), correctedText.size(), CMARK_OPT_DEFAULT);
-    QString htmlText = QString::fromUtf8(html);
-    free(html);
-    return htmlText;
-}
-
-void MainWindow::updateChatWithMarkdown(const QString& markdownText) {
-    static QString accumulatedText;
-    accumulatedText += markdownText;
-
-    // Check if we have accumulated enough text to process
-    QRegularExpression re("[.!?]\\s*");
-    if (accumulatedText.contains(re)) {
-        QStringList sentences = accumulatedText.split(re, Qt::SkipEmptyParts);
-        for (const QString& sentence : sentences) {
-            QString htmlText = markdownToHtml(sentence);
-            chatTextBrowser->append(htmlText);
-        }
-        accumulatedText.clear();
-    }
 }

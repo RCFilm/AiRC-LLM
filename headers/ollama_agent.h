@@ -4,6 +4,7 @@
 
 #include "llm_agent_interface.h"
 #include "Ollama.h"
+#include <QString>
 
 class OllamaAgent : public LlmAgentInterface {
 public:
@@ -23,8 +24,8 @@ private:
     Ollama ollamaInstance;
     std::string serverURL;
 
-    // Declare the trim function
-    std::string trim(const std::string& str);
+    // Declare the markdownToHtml function
+    static QString markdownToHtml(const QString& markdownText);
 };
 
 #endif // OLLAMA_AGENT_H

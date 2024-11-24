@@ -21,6 +21,7 @@ SOURCES += \
     src/huggingface_api.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
+    src/mainwindow_helpers.cpp \
     src/ollama_agent.cpp \
     src/ollama_api.cpp \
     src/workspace.cpp \
@@ -33,6 +34,7 @@ HEADERS += \
     headers/llm_agent_interface.h \
     headers/llm_api_interface.h \
     headers/mainwindow.h \
+    headers/mainwindow_helpers.h \
     include/Ollama.h \  # Update the path to Ollama.h
     headers/ollama_agent.h \
     headers/ollama_api.h \

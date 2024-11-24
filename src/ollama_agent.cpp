@@ -2,7 +2,10 @@
 #include "ollama_agent.h"
 #include "Ollama.h"
 #include <QDebug>
-#include <algorithm>
+#include <QString>
+#include <QStringList>
+#include <QTextDocument>
+#include <sstream>
 
 void OllamaAgent::setServerURL(const std::string& url) {
     serverURL = url;
@@ -22,10 +25,19 @@ bool OllamaAgent::load_model(const std::string& modelName) {
 }
 
 void OllamaAgent::generate(const std::string& modelName, const std::string& prompt, std::function<void(const std::string&)> callback) {
-    ollamaInstance.generate(modelName, prompt, [this, callback](const std::string& response) {
-        std::string trimmedResponse = trim(response); // Trim the response
-        qDebug() << "Received response from model:" << QString::fromStdString(trimmedResponse);
-        callback(trimmedResponse);
+    std::ostringstream responseStream;
+    ollamaInstance.generate(modelName, prompt, [this, callback, &responseStream](const std::string& response) {
+        responseStream << response;
+        qDebug() << "Received response from model:" << QString::fromStdString(response);
+
+        // Check if the response ends with a period or some other completion signal
+        if (response.back() == '.') {
+            std::string fullResponse = responseStream.str();
+            QString responseText = QString::fromStdString(fullResponse);
+            QString htmlText = markdownToHtml(responseText); // Convert Markdown to HTML
+            callback(htmlText.toStdString());
+            responseStream.str(""); // Clear the stream for the next response
+        }
     });
 }
 
@@ -40,12 +52,9 @@ void OllamaAgent::setSettings(const QJsonObject& settings) {
     ollamaInstance.setServerURL(serverURL);
 }
 
-// Define the trim function
-std::string OllamaAgent::trim(const std::string& str) {
-    size_t first = str.find_first_not_of(' ');
-    if (std::string::npos == first) {
-        return str;
-    }
-    size_t last = str.find_last_not_of(' ');
-    return str.substr(first, (last - first + 1));
+// Define the markdownToHtml function
+QString OllamaAgent::markdownToHtml(const QString& markdownText) {
+    QTextDocument document;
+    document.setMarkdown(markdownText);
+    return document.toHtml();
 }
