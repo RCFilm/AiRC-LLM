@@ -11,6 +11,8 @@
 #include <vector>
 #include <future>
 #include <QRegularExpression>
+#include <QTimer>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -51,6 +53,8 @@ MainWindow::MainWindow(QWidget *parent)
     // Set up the chat text browser
     chatTextBrowser = new QTextBrowser(rightWidget);
     chatTextBrowser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // Set the background color to a lighter gray
+    chatTextBrowser->setStyleSheet("QTextBrowser { background-color: rgb(50, 51, 61); }");
     rightLayout->addWidget(chatTextBrowser);
 
     // Set up the input line edit and send button
@@ -171,6 +175,10 @@ void MainWindow::addWorkspace() {
     // Open settings dialog to select a model for the new workspace
     openSettings(item);
 
+    // Select the newly created workspace
+    workspacesList->setCurrentItem(item);
+    selectWorkspace(item);
+
     // Save workspaces to file after adding a new workspace
     saveWorkspaces();
 }
@@ -220,8 +228,10 @@ void MainWindow::sendMessage() {
             try {
                 workspaceMap[workspaceId]->getAgent()->generate(modelName.toStdString(), message.toStdString(), [this, workspaceId](const std::string& response) {
                     QString responseText = QString::fromStdString(response);
-                    QMetaObject::invokeMethod(this, [this, responseText]() {
+                    QMetaObject::invokeMethod(this, [this, responseText, workspaceId]() {
                         MainWindowHelpers::updateChatWithMarkdown(chatTextBrowser, responseText);
+                        workspaceMap[workspaceId]->addChatMessage(responseText);
+                        saveWorkspaces(); // Save workspaces after adding a chat message
                     });
                 });
             } catch (const std::runtime_error& e) {
@@ -357,12 +367,27 @@ void MainWindow::deleteWorkspace() {
     }
 }
 
+void MainWindow::deleteAllWorkspaces() {
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Delete All Workspaces", "Are you sure you want to delete all workspaces?", QMessageBox::Yes | QMessageBox::No);
+
+    if (reply == QMessageBox::Yes) {
+        for (auto it = workspaceMap.begin(); it != workspaceMap.end(); ++it) {
+            delete it->second;
+        }
+        workspaceMap.clear();
+        workspacesList->clear();
+        saveWorkspaces();
+    }
+}
+
 void MainWindow::showContextMenu(const QPoint& pos) {
     QMenu contextMenu(tr("Context menu"), this);
 
     QAction renameAction("Rename Workspace", this);
     QAction deleteAction("Delete Workspace", this);
     QAction settingsAction("Settings", this);
+    QAction deleteAllAction("Delete All Workspaces", this);
 
     connect(&renameAction, &QAction::triggered, this, &MainWindow::renameWorkspace);
     connect(&deleteAction, &QAction::triggered, this, &MainWindow::deleteWorkspace);
@@ -372,10 +397,12 @@ void MainWindow::showContextMenu(const QPoint& pos) {
             openSettings(item);
         }
     });
+    connect(&deleteAllAction, &QAction::triggered, this, &MainWindow::deleteAllWorkspaces);
 
     contextMenu.addAction(&renameAction);
     contextMenu.addAction(&deleteAction);
     contextMenu.addAction(&settingsAction);
+    contextMenu.addAction(&deleteAllAction);
 
     contextMenu.exec(workspacesList->mapToGlobal(pos));
 }

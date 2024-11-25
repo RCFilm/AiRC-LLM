@@ -48,6 +48,7 @@ private slots:
     void renameWorkspace();
     void deleteWorkspace();
     void showContextMenu(const QPoint& pos);
+    void deleteAllWorkspaces(); // Declare the deleteAllWorkspaces method
 
 private:
     Ui::MainWindow *ui;

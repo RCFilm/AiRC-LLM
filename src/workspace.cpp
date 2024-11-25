@@ -1,5 +1,10 @@
 // workspace.cpp
 #include "workspace.h"
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDebug>
 
 Workspace::Workspace(const QString& name, int id, LlmAgentInterface* agent, const QString& apiType)
     : name(name), model(""), id(id), agent(agent), apiType(apiType) {
@@ -115,4 +120,33 @@ std::vector<float> Workspace::getEmbedding(const std::string& text) {
     // This is a placeholder implementation
     std::vector<float> embedding(embeddingDim, 0.0f);
     return embedding;
+}
+
+void Workspace::saveToFile(const QString& filename) const {
+    QJsonObject json = toJson();
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "Could not open file for writing:" << filename;
+        return;
+    }
+    QJsonDocument doc(json);
+    file.write(doc.toJson());
+    file.close();
+}
+
+void Workspace::loadFromFile(const QString& filename) {
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Could not open file for reading:" << filename;
+        return;
+    }
+    QByteArray data = file.readAll();
+    file.close();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (doc.isNull()) {
+        qWarning() << "Failed to parse JSON document from file:" << filename;
+        return;
+    }
+    QJsonObject json = doc.object();
+    fromJson(json, agent);
 }

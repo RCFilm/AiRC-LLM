@@ -33,6 +33,10 @@ public:
     void loadIndex(const std::string& filename);
     std::vector<float> getEmbedding(const std::string& text);
 
+    // Declare the new methods
+    void saveToFile(const QString& filename) const;
+    void loadFromFile(const QString& filename);
+
 private:
     QString name;
     QString model;

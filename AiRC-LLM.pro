@@ -66,3 +66,7 @@ LIBS += -L/usr/local/lib -lcmark
 
 # Set the application name
 TARGET = AiRC-LLC
+
+DISTFILES += \
+    LICENSE \
+    README.txt

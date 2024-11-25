@@ -6,6 +6,9 @@
 #include <QStringList>
 #include <QTextDocument>
 #include <sstream>
+#include <QMetaObject>
+#include <QCoreApplication>
+#include <future>
 
 void OllamaAgent::setServerURL(const std::string& url) {
     serverURL = url;
@@ -26,18 +29,25 @@ bool OllamaAgent::load_model(const std::string& modelName) {
 
 void OllamaAgent::generate(const std::string& modelName, const std::string& prompt, std::function<void(const std::string&)> callback) {
     std::ostringstream responseStream;
-    ollamaInstance.generate(modelName, prompt, [this, callback, &responseStream](const std::string& response) {
-        responseStream << response;
-        qDebug() << "Received response from model:" << QString::fromStdString(response);
+    std::future<void> future = std::async(std::launch::async, [this, modelName, prompt, callback, &responseStream]() {
+        ollamaInstance.generate(modelName, prompt, [this, callback, &responseStream](const std::string& response) {
+            responseStream << response;
+            qDebug() << "Received response from model:" << QString::fromStdString(response);
 
-        // Check if the response ends with a period or some other completion signal
-        if (response.back() == '.') {
-            std::string fullResponse = responseStream.str();
-            QString responseText = QString::fromStdString(fullResponse);
-            QString htmlText = markdownToHtml(responseText); // Convert Markdown to HTML
-            callback(htmlText.toStdString());
-            responseStream.str(""); // Clear the stream for the next response
-        }
+            // Check if the response ends with a period or some other completion signal
+            if (response.back() == '.') {
+                std::string fullResponse = responseStream.str();
+                QString responseText = QString::fromStdString(fullResponse);
+                QString htmlText = markdownToHtml(responseText); // Convert Markdown to HTML
+
+                // Ensure the UI update is performed on the main thread
+                QMetaObject::invokeMethod(QCoreApplication::instance(), [callback, htmlText]() {
+                    callback(htmlText.toStdString());
+                });
+
+                responseStream.str(""); // Clear the stream for the next response
+            }
+        });
     });
 }
 
