@@ -1,4 +1,3 @@
-// mainwindow.h
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -22,11 +21,13 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QMenu>
+#include <QMenuBar>
 #include <QTimer>
 #include <unordered_map>
 #include "workspace.h"
 #include "huggingface_agent.h"
 #include "ollama_agent.h"
+#include "debugwindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -48,7 +49,8 @@ private slots:
     void renameWorkspace();
     void deleteWorkspace();
     void showContextMenu(const QPoint& pos);
-    void deleteAllWorkspaces(); // Declare the deleteAllWorkspaces method
+    void deleteAllWorkspaces();
+    void toggleDebugWindow();
 
 private:
     Ui::MainWindow *ui;
@@ -59,13 +61,16 @@ private:
     QPushButton *addWorkspaceButton;
     QListWidget *workspacesList;
     QTextBrowser *chatTextBrowser;
-    QLineEdit *inputLineEdit;
+    QLineEdit *inputLineEdit; // Ensure this is declared
     QPushButton *sendButton;
     QPushButton *clearButton;
-    QPushButton *settingsButton; // Declare settingsButton
+    QPushButton *settingsButton;
     std::map<int, Workspace*> workspaceMap;
     QNetworkAccessManager *networkManager;
     std::unordered_map<std::string, bool> modelStatusMap;
+    DebugWindow *debugWindow;
+    QMenu *developerMenu;
+    QAction *debugWindowAction;
 
     void loadWorkspaces();
     void saveWorkspaces();
@@ -74,7 +79,6 @@ private:
     int getNextWorkspaceId() const;
     LlmAgentInterface* createAgent(const QString& apiType);
 
-    // Declare markdown handling functions
     QString markdownToHtml(const QString& markdownText);
     void updateChatWithMarkdown(const QString& markdownText);
 };

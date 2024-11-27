@@ -90,9 +90,27 @@ LlmAgentInterface* Workspace::getAgent() const {
 }
 
 void Workspace::addEmbedding(const std::vector<float>& embedding, const QString& text) {
-    embeddings.push_back(embedding);
-    texts.push_back(text);
-    index->addPoint(embedding.data(), texts.size() - 1);
+    qDebug() << "Adding embedding for text:" << text;
+    try {
+        embeddings.push_back(embedding);
+        texts.push_back(text);
+        index->addPoint(embedding.data(), texts.size() - 1);
+    } catch (const std::exception& e) {
+        qCritical() << "Exception caught during embedding addition:" << e.what();
+    }
+}
+
+std::vector<float> Workspace::getEmbedding(const std::string& text) {
+    qDebug() << "Generating embedding for text:" << QString::fromStdString(text);
+    try {
+        // Implement the logic to generate an embedding for the given text
+        // This is a placeholder implementation
+        std::vector<float> embedding(embeddingDim, 0.0f);
+        return embedding;
+    } catch (const std::exception& e) {
+        qCritical() << "Exception caught during embedding generation:" << e.what();
+        return std::vector<float>();
+    }
 }
 
 QString Workspace::getNearestText(const std::vector<float>& queryEmbedding) {
@@ -112,14 +130,6 @@ void Workspace::loadIndex(const std::string& filename) {
     auto space = std::make_unique<hnswlib::L2Space>(embeddingDim);
     index = std::make_unique<hnswlib::HierarchicalNSW<float>>(space.get(), 100000);
     index->loadIndex(filename, space.get());
-}
-
-std::vector<float> Workspace::getEmbedding(const std::string& text) {
-    (void)text; // Suppress unused parameter warning
-    // Implement the logic to generate an embedding for the given text
-    // This is a placeholder implementation
-    std::vector<float> embedding(embeddingDim, 0.0f);
-    return embedding;
 }
 
 void Workspace::saveToFile(const QString& filename) const {
@@ -149,4 +159,75 @@ void Workspace::loadFromFile(const QString& filename) {
     }
     QJsonObject json = doc.object();
     fromJson(json, agent);
+}
+
+void Workspace::saveEmbeddings(const QString& filename) const {
+    qDebug() << "Saving embeddings to file:" << filename;
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "Could not open file for writing:" << filename;
+        return;
+    }
+
+    QJsonArray embeddingsArray;
+    for (const auto& embedding : embeddings) {
+        QJsonArray embeddingArray;
+        for (const auto& value : embedding) {
+            embeddingArray.append(value);
+        }
+        embeddingsArray.append(embeddingArray);
+    }
+
+    QJsonObject json;
+    json["embeddings"] = embeddingsArray;
+    json["texts"] = QJsonArray::fromStringList(QStringList(texts.begin(), texts.end())); // Convert std::vector<QString> to QStringList
+
+    QJsonDocument doc(json);
+    file.write(doc.toJson());
+    file.close();
+}
+
+void Workspace::loadEmbeddings(const QString& filename) {
+    qDebug() << "Loading embeddings from file:" << filename;
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Could not open file for reading:" << filename;
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (doc.isNull()) {
+        qWarning() << "Failed to parse JSON document from file:" << filename;
+        return;
+    }
+
+    QJsonObject json = doc.object();
+    QJsonArray embeddingsArray = json["embeddings"].toArray();
+    QJsonArray textsArray = json["texts"].toArray();
+
+    embeddings.clear();
+    texts.clear();
+
+    for (const auto& embeddingValue : embeddingsArray) {
+        QJsonArray embeddingArray = embeddingValue.toArray();
+        std::vector<float> embedding;
+        for (const auto& value : embeddingArray) {
+            embedding.push_back(value.toDouble());
+        }
+        embeddings.push_back(embedding);
+    }
+
+    for (const auto& textValue : textsArray) {
+        texts.push_back(textValue.toString());
+    }
+
+    // Rebuild the index
+    auto space = std::make_unique<hnswlib::L2Space>(embeddingDim);
+    index = std::make_unique<hnswlib::HierarchicalNSW<float>>(space.get(), 100000);
+    for (size_t i = 0; i < embeddings.size(); ++i) {
+        index->addPoint(embeddings[i].data(), i);
+    }
 }

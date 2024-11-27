@@ -16,6 +16,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    src/debugwindow.cpp \
     src/deepseek_api.cpp \
     src/huggingface_agent.cpp \
     src/huggingface_api.cpp \
@@ -28,6 +29,7 @@ SOURCES += \
     src/workspace_manager.cpp
 
 HEADERS += \
+    headers/debugwindow.h \
     headers/deepseek_api.h \
     headers/huggingface_agent.h \
     headers/huggingface_api.h \

@@ -1,3 +1,4 @@
+// mainwindow_helpers.cpp
 #include "mainwindow_helpers.h"
 #include "ollama_agent.h"
 #include "huggingface_agent.h"
@@ -9,23 +10,26 @@
 #include <vector>
 #include <future>
 #include <QRegularExpression>
+#include <QException>  // Include QException
+#include <QMessageBox> // Include QMessageBox
 
 namespace MainWindowHelpers {
 
-void updateChatWithMarkdown(QTextBrowser* chatTextBrowser, const QString& markdownText) {
+void MainWindowHelpers::updateChatWithMarkdown(QTextBrowser* chatTextBrowser, const QString& markdownText) {
+    qDebug() << "Updating chat with markdown text:" << markdownText;
     chatTextBrowser->append(markdownText);
 }
 
-LlmAgentInterface* createAgent(const QString& apiType) {
+LlmAgentInterface* createAgent(const QString& apiType, DebugWindow* debugWindow) {
     if (apiType == "Ollama") {
-        return new OllamaAgent();
+        return new OllamaAgent(debugWindow);
     } else if (apiType == "HuggingFace") {
         return new HuggingFaceAgent();
     }
     return nullptr;
 }
 
-void loadWorkspaces(QMap<int, Workspace*>& workspaceMap, QListWidget* workspacesList) {
+void loadWorkspaces(QMap<int, Workspace*>& workspaceMap, QListWidget* workspacesList, DebugWindow* debugWindow) {
     try {
         QString filePath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/workspaces.json";
         QFile file(filePath);
@@ -66,7 +70,7 @@ void loadWorkspaces(QMap<int, Workspace*>& workspaceMap, QListWidget* workspaces
                 QJsonObject jsonObject = jsonValue.toObject();
                 QString agentType = jsonObject["agentType"].toString();
                 QString apiType = jsonObject["apiType"].toString();
-                LlmAgentInterface* agent = createAgent(apiType);
+                LlmAgentInterface* agent = createAgent(apiType, debugWindow);
                 if (agent) {
                     Workspace* workspace = new Workspace(Workspace::fromJson(jsonObject, agent));
                     workspaceMap[workspace->getId()] = workspace;
@@ -192,4 +196,5 @@ int getNextWorkspaceId(const QMap<int, Workspace*>& workspaceMap) {
     }
     return maxId + 1;
 }
-}
+
+} // namespace MainWindowHelpers

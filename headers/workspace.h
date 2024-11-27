@@ -36,6 +36,8 @@ public:
     // Declare the new methods
     void saveToFile(const QString& filename) const;
     void loadFromFile(const QString& filename);
+    void saveEmbeddings(const QString& filename) const;
+    void loadEmbeddings(const QString& filename);
 
 private:
     QString name;

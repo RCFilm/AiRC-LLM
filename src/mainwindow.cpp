@@ -1,7 +1,7 @@
 // mainwindow.cpp
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "mainwindow_helpers.h"
+#include "mainwindow_helpers.h" // Include the helper header
 #include <QException>
 #include <QDebug>
 #include <QDir>
@@ -13,6 +13,8 @@
 #include <QRegularExpression>
 #include <QTimer>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QCheckBox> // Include QCheckBox
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -22,9 +24,13 @@ MainWindow::MainWindow(QWidget *parent)
     // Initialize network manager
     networkManager = new QNetworkAccessManager(this);
 
+    // Enable debug logging for requests and replies
+    ollama::show_requests(true);
+    ollama::show_replies(true);
+
     // Set up the central widget and layout
     centralWidget = new QWidget(this);
-    mainLayout = new QHBoxLayout(centralWidget); // Ensure this is QHBoxLayout
+    mainLayout = new QHBoxLayout(centralWidget);
 
     // Create a QSplitter to manage the layout
     QSplitter *splitter = new QSplitter(Qt::Horizontal, centralWidget);
@@ -53,12 +59,11 @@ MainWindow::MainWindow(QWidget *parent)
     // Set up the chat text browser
     chatTextBrowser = new QTextBrowser(rightWidget);
     chatTextBrowser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    // Set the background color to a lighter gray
     chatTextBrowser->setStyleSheet("QTextBrowser { background-color: rgb(50, 51, 61); }");
     rightLayout->addWidget(chatTextBrowser);
 
     // Set up the input line edit and send button
-    inputLineEdit = new QLineEdit(rightWidget);
+    inputLineEdit = new QLineEdit(rightWidget); // Initialize inputLineEdit
     inputLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     sendButton = new QPushButton("Send", rightWidget);
     sendButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -83,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Set initial sizes for the splitter
     QList<int> sizes;
-    sizes << 100 << 900; // Adjust these values as needed to achieve the desired ratio
+    sizes << 100 << 900;
     splitter->setSizes(sizes);
 
     // Set the central widget
@@ -121,6 +126,20 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Connect double-click to open settings
     connect(workspacesList, &QListWidget::itemDoubleClicked, this, &MainWindow::openSettings);
+
+    // Initialize DebugWindow as a separate window
+    debugWindow = new DebugWindow(nullptr);
+
+    // Set up the menu bar
+    QMenuBar *menuBar = new QMenuBar(this);
+    setMenuBar(menuBar);
+
+    // Add Developer menu
+    developerMenu = menuBar->addMenu("Developer");
+
+    // Add Debugging Window action
+    debugWindowAction = developerMenu->addAction("Debugging Window");
+    connect(debugWindowAction, &QAction::triggered, this, &MainWindow::toggleDebugWindow);
 }
 
 MainWindow::~MainWindow() {
@@ -131,6 +150,8 @@ MainWindow::~MainWindow() {
     for (auto it = workspaceMap.begin(); it != workspaceMap.end(); ++it) {
         delete it->second;
     }
+
+    delete debugWindow; // Ensure DebugWindow is deleted
 }
 
 void MainWindow::loadWorkspaces() {
@@ -138,7 +159,7 @@ void MainWindow::loadWorkspaces() {
     for (auto it = workspaceMap.begin(); it != workspaceMap.end(); ++it) {
         qmapWorkspaceMap[it->first] = it->second;
     }
-    MainWindowHelpers::loadWorkspaces(qmapWorkspaceMap, workspacesList);
+    MainWindowHelpers::loadWorkspaces(qmapWorkspaceMap, workspacesList, debugWindow);
     workspaceMap = qmapWorkspaceMap.toStdMap();
 }
 
@@ -169,7 +190,7 @@ void MainWindow::addWorkspace() {
     workspacesList->addItem(item);
 
     // Create an instance of OllamaAgent and pass it to the workspace
-    OllamaAgent* ollamaAgent = new OllamaAgent();
+    OllamaAgent* ollamaAgent = new OllamaAgent(debugWindow); // Pass the debugWindow pointer
     workspaceMap[workspaceId] = new Workspace(workspaceName, workspaceId, ollamaAgent, "Ollama");
 
     // Open settings dialog to select a model for the new workspace
@@ -225,10 +246,63 @@ void MainWindow::sendMessage() {
 
         // Use std::async for asynchronous generation
         auto future = std::async(std::launch::async, [this, workspaceId, modelName, message]() {
+            qDebug() << "Starting generation for model:" << modelName << "with prompt:" << message;
             try {
                 workspaceMap[workspaceId]->getAgent()->generate(modelName.toStdString(), message.toStdString(), [this, workspaceId](const std::string& response) {
                     QString responseText = QString::fromStdString(response);
                     QMetaObject::invokeMethod(this, [this, responseText, workspaceId]() {
+                        qDebug() << "Callback invoked with response:" << responseText;
+                        MainWindowHelpers::updateChatWithMarkdown(chatTextBrowser, responseText);
+                        workspaceMap[workspaceId]->addChatMessage(responseText);
+                        saveWorkspaces(); // Save workspaces after adding a chat message
+                    });
+                });
+            } catch (const std::runtime_error& e) {
+                QMetaObject::invokeMethod(this, [this, e]() {
+                    chatTextBrowser->append("Runtime Error: " + QString::fromStdString(e.what()));
+                });
+            } catch (const std::exception& e) {
+                QMetaObject::invokeMethod(this, [this, e]() {
+                    chatTextBrowser->append("Error: " + QString::fromStdString(e.what()));
+                });
+            }
+            qDebug() << "Ending generation for model:" << modelName << "with prompt:" << message;
+        });
+
+        // Optionally, you can wait for the future to complete if needed
+        // future.wait();
+    }
+}
+
+    QString message = inputLineEdit->text();
+    if (!message.isEmpty()) {
+        inputLineEdit->clear();
+
+        QListWidgetItem *currentItem = workspacesList->currentItem();
+        if (!currentItem) return;
+        int workspaceId = currentItem->data(Qt::UserRole).toInt();
+
+        QString modelName = workspaceMap[workspaceId]->getModel();
+        if (modelName.isEmpty()) {
+            chatTextBrowser->append("No model selected for this workspace.");
+            return;
+        }
+
+        if (!MainWindowHelpers::verifyModelStartup(modelName, modelStatusMap)) {
+            chatTextBrowser->append("Model is not ready.");
+            return;
+        }
+
+        // Display loading indicator
+        chatTextBrowser->append("Generating response...");
+
+        // Use std::async for asynchronous generation
+        auto future = std::async(std::launch::async, [this, workspaceId, modelName, message]() {
+            try {
+                workspaceMap[workspaceId]->getAgent()->generate(modelName.toStdString(), message.toStdString(), [this, workspaceId](const std::string& response) {
+                    QString responseText = QString::fromStdString(response);
+                    QMetaObject::invokeMethod(this, [this, responseText, workspaceId]() {
+                        qDebug() << "Callback invoked with response:" << responseText;
                         MainWindowHelpers::updateChatWithMarkdown(chatTextBrowser, responseText);
                         workspaceMap[workspaceId]->addChatMessage(responseText);
                         saveWorkspaces(); // Save workspaces after adding a chat message
@@ -244,6 +318,9 @@ void MainWindow::sendMessage() {
                 });
             }
         });
+
+        // Optionally, you can wait for the future to complete if needed
+        // future.wait();
     }
 }
 
@@ -274,12 +351,17 @@ void MainWindow::openSettings(QListWidgetItem *item) {
     QComboBox *modelComboBox = new QComboBox(&settingsDialog);
     formLayout->addRow("Model:", modelComboBox);
 
-    // Other settings (placeholder)
-    QLineEdit *otherSetting1 = new QLineEdit(&settingsDialog);
-    formLayout->addRow("Other Setting 1:", otherSetting1);
+    // Embeddings checkbox
+    QCheckBox *embeddingsCheckBox = new QCheckBox("Use Embeddings", &settingsDialog);
+    formLayout->addRow("Embeddings:", embeddingsCheckBox);
 
-    QLineEdit *otherSetting2 = new QLineEdit(&settingsDialog);
-    formLayout->addRow("Other Setting 2:", otherSetting2);
+    // Save embeddings button
+    QPushButton *saveEmbeddingsButton = new QPushButton("Save Embeddings", &settingsDialog);
+    formLayout->addRow("Save Embeddings:", saveEmbeddingsButton);
+
+    // Load embeddings button
+    QPushButton *loadEmbeddingsButton = new QPushButton("Load Embeddings", &settingsDialog);
+    formLayout->addRow("Load Embeddings:", loadEmbeddingsButton);
 
     layout->addLayout(formLayout);
 
@@ -287,18 +369,16 @@ void MainWindow::openSettings(QListWidgetItem *item) {
     layout->addWidget(okButton);
 
     connect(okButton, &QPushButton::clicked, &settingsDialog, &QDialog::accept);
-
-    // Connect the apiComboBox to update the modelComboBox dynamically
-    connect(apiComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
-        (void)index; // Suppress unused parameter warning
-        modelComboBox->clear();
-        QString selectedApi = apiComboBox->currentText();
-        LlmAgentInterface* agent = MainWindowHelpers::createAgent(selectedApi);
-        if (agent) {
-            std::vector<std::string> models = agent->list_models();
-            for (const auto& model : models) {
-                modelComboBox->addItem(QString::fromStdString(model));
-            }
+    connect(saveEmbeddingsButton, &QPushButton::clicked, [this, workspaceId]() {
+        QString filename = QFileDialog::getSaveFileName(this, "Save Embeddings", "", "JSON Files (*.json)");
+        if (!filename.isEmpty()) {
+            workspaceMap[workspaceId]->saveEmbeddings(filename);
+        }
+    });
+    connect(loadEmbeddingsButton, &QPushButton::clicked, [this, workspaceId]() {
+        QString filename = QFileDialog::getOpenFileName(this, "Load Embeddings", "", "JSON Files (*.json)");
+        if (!filename.isEmpty()) {
+            workspaceMap[workspaceId]->loadEmbeddings(filename);
         }
     });
 
@@ -307,11 +387,29 @@ void MainWindow::openSettings(QListWidgetItem *item) {
     apiComboBox->setCurrentIndex(apiComboBox->findText(currentApiType));
     apiComboBox->currentIndexChanged(apiComboBox->currentIndex());
 
+    // Populate the modelComboBox with available models
+    OllamaAgent* ollamaAgent = dynamic_cast<OllamaAgent*>(workspaceMap[workspaceId]->getAgent());
+    if (ollamaAgent) {
+        qDebug() << "Dynamic cast to OllamaAgent successful";
+        std::vector<std::string> models = ollamaAgent->list_models();
+        qDebug() << "Available models:" << models.size();
+        for (const auto& model : models) {
+            qDebug() << QString::fromStdString(model);
+            modelComboBox->addItem(QString::fromStdString(model));
+        }
+    } else {
+        qDebug() << "Dynamic cast to OllamaAgent failed";
+    }
+
     if (settingsDialog.exec() == QDialog::Accepted) {
         QString selectedApi = apiComboBox->currentText();
         QString selectedModel = modelComboBox->currentText();
+        bool useEmbeddings = embeddingsCheckBox->isChecked();
+
         workspaceMap[workspaceId]->setApiType(selectedApi);
         workspaceMap[workspaceId]->setModel(selectedModel);
+        workspaceMap[workspaceId]->getAgent()->setSettings({{"use_embeddings", useEmbeddings}});
+
         chatTextBrowser->append("API " + selectedApi + " and Model " + selectedModel + " selected for workspace " + workspaceName);
 
         // Save workspaces to file after setting the model
@@ -405,4 +503,12 @@ void MainWindow::showContextMenu(const QPoint& pos) {
     contextMenu.addAction(&deleteAllAction);
 
     contextMenu.exec(workspacesList->mapToGlobal(pos));
+}
+
+void MainWindow::toggleDebugWindow() {
+    if (debugWindow->isVisible()) {
+        debugWindow->hide();
+    } else {
+        debugWindow->show();
+    }
 }
