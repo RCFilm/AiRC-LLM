@@ -103,10 +103,17 @@ We welcome contributions! Please see our CONTRIBUTING.md for details on how to c
 
 License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the RCFilm Proprietary License. By accessing, using, or modifying this software, you agree to be bound by the terms and conditions of this license.
 
-Contact
+Key Points of the License:
 
-For any questions or feedback, please open an issue on GitHub or contact the maintainers directly.
+Non-Commercial Use Only: You are granted a non-exclusive, non-transferable license to use this software for non-commercial purposes only. Commercial use is strictly prohibited without explicit written permission from the original author (RCFilm).
+Modification and Ownership: Any modifications made to the software must be shared with the original author (RCFilm), and the original author retains ownership of those modifications. You may not distribute or use any modified versions of the software without explicit written permission from the original author.
+Attribution: You must include attribution to the original author (RCFilm) in any use or distribution of this software.
+No Warranty: This software is provided "as is," without warranty of any kind, express or implied.
+Termination: Your rights under this license will terminate automatically without notice from the original author if you fail to comply with any term(s) of this license.
+Governing Law: This license shall be governed by and construed in accordance with the laws of USA, without regard to its conflict of law principles.
+Contact Information
 
+For any questions or to request permission for commercial use, please contact RCFilm at https://github.com/RCFilm.
 Thank you for using AiRC-LLM! We hope it serves your research and development needs effectively.
