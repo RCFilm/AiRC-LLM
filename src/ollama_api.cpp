@@ -134,28 +134,20 @@ void OllamaApi::generateWithEmbedding(const std::string& modelName, const std::s
 
         QNetworkReply* reply = networkManager->post(request, jsonDoc.toJson());
 
-        QEventLoop loop;
-        QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-        loop.exec();
+        QObject::connect(reply, &QNetworkReply::readyRead, [reply, callback]() {
+            QByteArray data = reply->readAll();
+            QJsonDocument responseDoc = QJsonDocument::fromJson(data);
+            if (!responseDoc.isNull() && responseDoc.isObject()) {
+                QJsonObject responseObj = responseDoc.object();
+                if (responseObj.contains("embedding") && responseObj["embedding"].isString()) {
+                    callback(responseObj["embedding"].toString().toStdString());
+                }
+            }
+        });
 
-        if (reply->error() != QNetworkReply::NoError) {
-            qCritical() << "Network error:" << reply->errorString();
-            throw std::runtime_error("Network error: " + reply->errorString().toStdString());
-        }
-
-        QJsonDocument responseDoc = QJsonDocument::fromJson(reply->readAll());
-        if (responseDoc.isNull() || !responseDoc.isObject()) {
-            qCritical() << "Invalid JSON response: Expected an object";
-            throw std::runtime_error("Invalid JSON response: Expected an object");
-        }
-
-        QJsonObject responseObj = responseDoc.object();
-        if (!responseObj.contains("embedding") || !responseObj["embedding"].isString()) {
-            qCritical() << "Invalid JSON response: Missing or invalid 'embedding' field";
-            throw std::runtime_error("Invalid JSON response: Missing or invalid 'embedding' field");
-        }
-
-        callback(responseObj["embedding"].toString().toStdString());
+        QObject::connect(reply, &QNetworkReply::finished, [reply]() {
+            reply->deleteLater();
+        });
     } else {
         callback("Embedding generation is disabled.");
     }

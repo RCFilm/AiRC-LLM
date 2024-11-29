@@ -52,6 +52,7 @@ private slots:
     void deleteAllWorkspaces(); // Declare the deleteAllWorkspaces method
     void editUrlAndRepollModels(); // Declare the editUrlAndRepollModels method
     void repollModels(); // Declare the repollModels method
+    void streamSendMessage(); // Declare the streamSendMessage method
 
 private:
     Ui::MainWindow *ui;
@@ -80,6 +81,7 @@ private:
     // Declare markdown handling functions
     QString markdownToHtml(const QString& markdownText);
     void updateChatWithMarkdown(const QString& markdownText);
+    std::vector<float> parseEmbedding(const std::string& embeddingStr); // Declare the parseEmbedding method
 };
 
 #endif // MAINWINDOW_H

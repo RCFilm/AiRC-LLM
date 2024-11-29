@@ -286,6 +286,11 @@ void MainWindow::openSettings(QListWidgetItem *item) {
     embeddingCheckBox->setChecked(true); // Default to checked
     formLayout->addRow("Embedding:", embeddingCheckBox);
 
+    // Streaming checkbox
+    QCheckBox *streamingCheckBox = new QCheckBox("Enable Streaming", &settingsDialog);
+    streamingCheckBox->setChecked(true); // Default to checked
+    formLayout->addRow("Streaming:", streamingCheckBox);
+
     // Other settings (placeholder)
     QLineEdit *otherSetting1 = new QLineEdit(&settingsDialog);
     formLayout->addRow("Other Setting 1:", otherSetting1);
@@ -323,9 +328,11 @@ void MainWindow::openSettings(QListWidgetItem *item) {
         QString selectedApi = apiComboBox->currentText();
         QString selectedModel = modelComboBox->currentText();
         bool useEmbedding = embeddingCheckBox->isChecked();
+        bool enableStreaming = streamingCheckBox->isChecked();
         workspaceMap[workspaceId]->setApiType(selectedApi);
         workspaceMap[workspaceId]->setModel(selectedModel);
         workspaceMap[workspaceId]->setUseEmbedding(useEmbedding); // Set the embedding setting
+        workspaceMap[workspaceId]->setEnableStreaming(enableStreaming); // Set the streaming setting
         chatTextBrowser->append("API " + selectedApi + " and Model " + selectedModel + " selected for workspace " + workspaceName);
 
         // Save workspaces to file after setting the model
@@ -453,4 +460,47 @@ void MainWindow::repollModels() {
             }
         }
     }
+}
+
+void MainWindow::streamSendMessage() {
+    QString message = inputLineEdit->text();
+    if (!message.isEmpty()) {
+        inputLineEdit->clear();
+
+        QListWidgetItem *currentItem = workspacesList->currentItem();
+        if (!currentItem) return;
+        int workspaceId = currentItem->data(Qt::UserRole).toInt();
+
+        QString modelName = workspaceMap[workspaceId]->getModel();
+        if (modelName.isEmpty()) {
+            chatTextBrowser->append("No model selected for this workspace.");
+            return;
+        }
+
+        if (!MainWindowHelpers::verifyModelStartup(modelName, modelStatusMap)) {
+            chatTextBrowser->append("Model is not ready.");
+            return;
+        }
+
+        chatTextBrowser->append("Generating response...");
+
+        ollama::OllamaApi ollamaApi;
+        ollamaApi.generateWithEmbedding(modelName.toStdString(), message.toStdString(), [this, workspaceId](const std::string& embedding) {
+            std::vector<float> embeddingVec = parseEmbedding(embedding);
+            workspaceMap[workspaceId]->streamAddEmbedding(embeddingVec, QString::fromStdString(embedding));
+            QMetaObject::invokeMethod(this, [this, embedding]() {
+                chatTextBrowser->append("Embedding received: " + QString::fromStdString(embedding));
+            });
+        }, true);
+    }
+}
+
+std::vector<float> MainWindow::parseEmbedding(const std::string& embeddingStr) {
+    std::vector<float> embedding;
+    std::istringstream iss(embeddingStr);
+    std::string token;
+    while (std::getline(iss, token, ',')) {
+        embedding.push_back(std::stof(token));
+    }
+    return embedding;
 }

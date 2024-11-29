@@ -28,11 +28,11 @@ public:
     static std::string getServerURL();
     bool pingServer();
 
+    void generateWithEmbedding(const std::string& modelName, const std::string& prompt, std::function<void(const std::string&)> callback, bool useEmbedding);
+
 private:
     std::string serverURL;
     QNetworkAccessManager* networkManager;
-
-    void generateWithEmbedding(const std::string& modelName, const std::string& prompt, std::function<void(const std::string&)> callback, bool useEmbedding);
 };
 
 } // namespace ollama

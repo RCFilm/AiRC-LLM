@@ -772,3 +772,4 @@ qrc_*.cpp
 
 # Ignore Qt qml
 *.zip
+.DS_Store

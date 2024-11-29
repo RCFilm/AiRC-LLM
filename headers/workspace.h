@@ -34,7 +34,9 @@ public:
     std::vector<float> getEmbedding(const std::string& text);
     void saveToFile(const QString& filename) const;
     void loadFromFile(const QString& filename);
-    void setUseEmbedding(bool useEmbedding); // Add this function
+    void setUseEmbedding(bool useEmbedding);
+    void setEnableStreaming(bool enableStreaming);
+    void streamAddEmbedding(const std::vector<float>& embedding, const QString& text);
 
 private:
     QString name;
@@ -48,6 +50,7 @@ private:
     std::unique_ptr<hnswlib::HierarchicalNSW<float>> index;
     static constexpr int embeddingDim = 128; // Example dimension, adjust as needed
     bool useEmbedding = true; // Default to true
+    bool enableStreaming = true; // Default to true
 };
 
 #endif // WORKSPACE_H

@@ -10,7 +10,6 @@ Workspace::Workspace(const QString& name, int id, LlmAgentInterface* agent, cons
     : name(name), model(""), id(id), agent(agent), apiType(apiType) {
     auto space = std::make_unique<hnswlib::L2Space>(embeddingDim);
     index = std::make_unique<hnswlib::HierarchicalNSW<float>>(space.get(), 100000);
-    // No need to call initIndex, directly add points if necessary
 }
 
 QString Workspace::getName() const {
@@ -116,8 +115,6 @@ void Workspace::loadIndex(const std::string& filename) {
 
 std::vector<float> Workspace::getEmbedding(const std::string& text) {
     (void)text; // Suppress unused parameter warning
-    // Implement the logic to generate an embedding for the given text
-    // This is a placeholder implementation
     std::vector<float> embedding(embeddingDim, 0.0f);
     return embedding;
 }
@@ -153,4 +150,14 @@ void Workspace::loadFromFile(const QString& filename) {
 
 void Workspace::setUseEmbedding(bool useEmbedding) {
     this->useEmbedding = useEmbedding;
+}
+
+void Workspace::setEnableStreaming(bool enableStreaming) {
+    this->enableStreaming = enableStreaming;
+}
+
+void Workspace::streamAddEmbedding(const std::vector<float>& embedding, const QString& text) {
+    embeddings.push_back(embedding);
+    texts.push_back(text);
+    index->addPoint(embedding.data(), texts.size() - 1);
 }
