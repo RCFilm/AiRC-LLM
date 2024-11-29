@@ -35,11 +35,12 @@ HEADERS += \
     headers/llm_api_interface.h \
     headers/mainwindow.h \
     headers/mainwindow_helpers.h \
-    include/Ollama.h \  # Update the path to Ollama.h
+    \  # include/Ollama.h # Update the path to Ollama.h
     headers/ollama_agent.h \
     headers/ollama_api.h \
     headers/workspace.h \
     headers/workspace_manager.h \
+    include/Ollama.hpp \
     include/hnswlib/bruteforce.h \
     include/hnswlib/hnswalg.h \
     include/hnswlib/hnswlib.h \

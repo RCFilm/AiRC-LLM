@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "mainwindow_helpers.h"
+#include "ollama_api.h" // Include the ollama_api.h file
 #include <QException>
 #include <QDebug>
 #include <QDir>
@@ -13,6 +14,7 @@
 #include <QRegularExpression>
 #include <QTimer>
 #include <QMessageBox>
+#include <QCheckBox> // Include QCheckBox
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -121,6 +123,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Connect double-click to open settings
     connect(workspacesList, &QListWidget::itemDoubleClicked, this, &MainWindow::openSettings);
+
+    // Add a button to edit the URL and repoll the model list
+    QPushButton *editUrlButton = new QPushButton("Edit URL", leftWidget);
+    leftLayout->addWidget(editUrlButton);
+    connect(editUrlButton, &QPushButton::clicked, this, &MainWindow::editUrlAndRepollModels);
 }
 
 MainWindow::~MainWindow() {
@@ -274,6 +281,11 @@ void MainWindow::openSettings(QListWidgetItem *item) {
     QComboBox *modelComboBox = new QComboBox(&settingsDialog);
     formLayout->addRow("Model:", modelComboBox);
 
+    // Embedding checkbox
+    QCheckBox *embeddingCheckBox = new QCheckBox("Use Embedding", &settingsDialog);
+    embeddingCheckBox->setChecked(true); // Default to checked
+    formLayout->addRow("Embedding:", embeddingCheckBox);
+
     // Other settings (placeholder)
     QLineEdit *otherSetting1 = new QLineEdit(&settingsDialog);
     formLayout->addRow("Other Setting 1:", otherSetting1);
@@ -310,8 +322,10 @@ void MainWindow::openSettings(QListWidgetItem *item) {
     if (settingsDialog.exec() == QDialog::Accepted) {
         QString selectedApi = apiComboBox->currentText();
         QString selectedModel = modelComboBox->currentText();
+        bool useEmbedding = embeddingCheckBox->isChecked();
         workspaceMap[workspaceId]->setApiType(selectedApi);
         workspaceMap[workspaceId]->setModel(selectedModel);
+        workspaceMap[workspaceId]->setUseEmbedding(useEmbedding); // Set the embedding setting
         chatTextBrowser->append("API " + selectedApi + " and Model " + selectedModel + " selected for workspace " + workspaceName);
 
         // Save workspaces to file after setting the model
@@ -405,4 +419,38 @@ void MainWindow::showContextMenu(const QPoint& pos) {
     contextMenu.addAction(&deleteAllAction);
 
     contextMenu.exec(workspacesList->mapToGlobal(pos));
+}
+
+void MainWindow::editUrlAndRepollModels() {
+    bool ok;
+    QString newUrl = QInputDialog::getText(this, "Edit Ollama URL", "Enter new Ollama server URL:", QLineEdit::Normal, QString::fromStdString(ollama::OllamaApi::getServerURL()), &ok);
+
+    if (ok && !newUrl.isEmpty()) {
+        // Create an instance of OllamaApi
+        ollama::OllamaApi ollamaApi;
+        ollamaApi.setServerURL(newUrl.toStdString());
+        repollModels();
+    }
+}
+
+void MainWindow::repollModels() {
+    QListWidgetItem *currentItem = workspacesList->currentItem();
+    if (!currentItem) return;
+
+    int workspaceId = currentItem->data(Qt::UserRole).toInt();
+    LlmAgentInterface* agent = workspaceMap[workspaceId]->getAgent();
+
+    if (agent->getAgentType() == "Ollama") {
+        OllamaAgent* ollamaAgent = dynamic_cast<OllamaAgent*>(agent);
+        if (ollamaAgent) {
+            std::vector<std::string> models = ollamaAgent->list_models();
+            QComboBox* modelComboBox = findChild<QComboBox*>("modelComboBox");
+            if (modelComboBox) {
+                modelComboBox->clear();
+                for (const auto& model : models) {
+                    modelComboBox->addItem(QString::fromStdString(model));
+                }
+            }
+        }
+    }
 }

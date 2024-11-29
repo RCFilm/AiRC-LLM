@@ -150,3 +150,7 @@ void Workspace::loadFromFile(const QString& filename) {
     QJsonObject json = doc.object();
     fromJson(json, agent);
 }
+
+void Workspace::setUseEmbedding(bool useEmbedding) {
+    this->useEmbedding = useEmbedding;
+}

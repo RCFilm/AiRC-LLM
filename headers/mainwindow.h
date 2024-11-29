@@ -2,6 +2,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+// Include necessary headers
 #include <QMainWindow>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -49,6 +50,8 @@ private slots:
     void deleteWorkspace();
     void showContextMenu(const QPoint& pos);
     void deleteAllWorkspaces(); // Declare the deleteAllWorkspaces method
+    void editUrlAndRepollModels(); // Declare the editUrlAndRepollModels method
+    void repollModels(); // Declare the repollModels method
 
 private:
     Ui::MainWindow *ui;

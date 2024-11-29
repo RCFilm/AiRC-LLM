@@ -3,12 +3,12 @@
 #define OLLAMA_AGENT_H
 
 #include "llm_agent_interface.h"
-#include "Ollama.h"
+#include "ollama_api.h"
 #include <QString>
 
 class OllamaAgent : public LlmAgentInterface {
 public:
-    OllamaAgent() = default;
+    OllamaAgent();
     ~OllamaAgent() override = default;
 
     void setServerURL(const std::string& url) override;
@@ -18,13 +18,10 @@ public:
     void generate(const std::string& modelName, const std::string& prompt, std::function<void(const std::string&)> callback) override;
     QJsonObject getSettings() const override;
     void setSettings(const QJsonObject& settings) override;
-    std::string getAgentType() const override { return "Ollama"; } // Implement getAgentType
+    std::string getAgentType() const override { return "Ollama"; }
 
 private:
-    Ollama ollamaInstance;
     std::string serverURL;
-
-    // Declare the markdownToHtml function
     static QString markdownToHtml(const QString& markdownText);
 };
 

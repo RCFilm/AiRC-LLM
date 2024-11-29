@@ -34791,8 +34791,8 @@ public:
 #endif /* _MACARON_BASE64_H_ */
 
 
-#ifndef OLLAMA_HPP
-#define OLLAMA_HPP
+#ifndef OLLAMA_H
+#define OLLAMA_H
 
 /*  MIT License
 
