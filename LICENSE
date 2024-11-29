@@ -1,17 +1,37 @@
-AiRC-LLM License
+RCFilm Proprietary License
 
-Copyright (c) 2024 Ryan Cox
+Copyright (c) 2024 RCFilm
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to use the Software for personal or educational purposes, subject to the following conditions:
+This software is the proprietary property of RCFilm. By accessing, using, or modifying this software, you agree to be bound by the terms and conditions of this license.
 
-1. Non-Commercial Use: The Software may not be used for commercial purposes without prior written permission from the author.
+1. License Grant
 
-2. No Modification: The Software may not be modified, altered, or adapted in any way without prior written permission from the author.
+You are granted a non-exclusive, non-transferable license to use this software for non-commercial purposes only. This license does not grant you any rights to use the software for commercial purposes without the explicit written permission of the original author (RCFilm).
 
-3. Redistribution: Redistribution of the Software in its original, unmodified form is permitted provided that the following conditions are met:
-   - The Software is distributed free of charge.
-   - The original copyright notice and this permission notice are included in all copies or substantial portions of the Software.
+2. Modification and Ownership
 
-4. No Warranty: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+Any modifications made to the software must be shared with the original author (RCFilm), and the original author retains ownership of those modifications. You may not distribute or use any modified versions of the software without the explicit written permission of the original author.
 
-5. Contact for Permission: For any requests for commercial use, modification, or other permissions not covered by this license, please contact the author at https://github.com/RCFilm/AiRC-LLM.
+3. Commercial Use
+
+Commercial use of this software is strictly prohibited without the explicit written permission of the original author (RCFilm). For permission to use this software for commercial purposes, please contact RCFilm.
+
+4. Attribution
+
+You must include attribution to the original author (RCFilm) in any use or distribution of this software.
+
+5. No Warranty
+
+This software is provided "as is," without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
+
+6. Termination
+
+This license is effective until terminated. Your rights under this license will terminate automatically without notice from the original author if you fail to comply with any term(s) of this license. Upon termination, you must cease all use of the software and destroy all copies of the software in your possession or control.
+
+7. Governing Law
+
+This license shall be governed by and construed in accordance with the laws of USA, without regard to its conflict of law principles.
+
+8. Contact Information
+
+For any questions or to request permission for commercial use, please contact RCFilm at https://github.com/RCFilm.
